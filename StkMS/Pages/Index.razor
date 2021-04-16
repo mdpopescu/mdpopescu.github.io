@@ -24,6 +24,8 @@
     <p>Inventory completed at @inventory.CompletedAt.Value.ToString("G")</p>
 }
 
+<!-- V2 -->
+
 <button class="btn btn-primary" disabled="@(inventory.State != InventoryState.None)" @onclick="BeginInventory">Begin the inventory</button>
 <button class="btn btn-primary" disabled="@(inventory.State == InventoryState.None)" @onclick="CompleteInventory">Complete the inventory</button>
 
