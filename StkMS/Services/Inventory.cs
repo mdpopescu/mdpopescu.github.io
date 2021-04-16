@@ -8,7 +8,7 @@ namespace StkMS.Services
     {
         public InventoryState State { get; private set; }
 
-        public string Id { get; private set; }
+        public string Id { get; private set; } = "";
         public DateTimeOffset? StartedAt { get; private set; }
         public DateTimeOffset? CompletedAt { get; private set; }
 
