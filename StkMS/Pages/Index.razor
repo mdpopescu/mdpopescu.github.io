@@ -1,16 +1,18 @@
 ﻿@page "/"
-@page "/StkMS" 
+@page "/StkMS"
 @using Blazored.LocalStorage
 @using StkMS.Contracts
 @using StkMS.DomainModels
 @using StkMS.ViewModels
 @using BlazorBarcodeScanner.ZXing.JS
 
-@inject ILocalStorageService localStorage
+@inject IJSRuntime jsRuntime
 
+@inject ILocalStorageService localStorage
 @inject IMapper mapper
 @inject IStock stock
 @inject IInventory inventory
+@inject IReportGenerator reportGenerator
 
 <h1>Hello!</h1>
 
@@ -70,7 +72,6 @@
 
 <hr/>
 <BlazorBarcodeScanner.ZXing.JS.BarcodeReader Title="Scan Barcode from Camera"
-
                                              StartCameraAutomatically="true"
                                              ShowStart="false"
                                              ShowReset="false"
@@ -80,40 +81,7 @@
 
 <hr/>
 <div>
-    <p>
-        <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
-            Show/Hide Inventory
-        </button>
-    </p>
-    <div class="collapse" id="collapseExample">
-        <div class="col-12">
-            <div>
-                <table class="table">
-                    <thead>
-                    <tr class="row">
-                        <th class="col-2 text-left">Code</th>
-                        <th class="col-3 text-left">Name</th>
-                        <th class="col-2 text-center">Unit</th>
-                        <th class="col-2 text-center">Unit Price</th>
-                        <th class="col-2 text-center">Quantity</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    @foreach (var record in stock.GetAll())
-                    {
-                        <tr class="row">
-                            <td class="col-2 text-left">@record.Product.Code</td>
-                            <td class="col-3 text-left">@record.Product.Name</td>
-                            <td class="col-2 text-center">@record.Product.Unit</td>
-                            <td class="col-2 text-right">@record.Product.UnitPrice.ToString("N")</td>
-                            <td class="col-2 text-right">@record.Quantity.ToString("N")</td>
-                        </tr>
-                    }
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
+    <button class="btn btn-primary" type="button" @onclick="() => GenerateReport()">Generate Report</button>
 </div>
 
 @code
@@ -126,7 +94,7 @@
 
         JsInteropClass.BarcodeReceived += LocalReceivedBarcodeText;
 
-        ProductScanned("1235");
+        ProductScanned("123500234976823456");
     }
 
     private void LocalReceivedBarcodeText(BarcodeReceivedEventArgs args)
@@ -155,5 +123,11 @@
     {
         var product = mapper.MapToDomain(stockViewModel!);
         stock.AddOrUpdate(product);
+    }
+
+    private ValueTask GenerateReport()
+    {
+        var bytes = reportGenerator.Generate();
+        return jsRuntime.InvokeVoidAsync("BlazorDownloadFile", "report.pdf", "application/octet-stream", bytes);
     }
 }
